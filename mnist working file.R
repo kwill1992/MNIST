@@ -122,3 +122,17 @@ model %>% evaluate(x_test, y_test)
 #Generate predictions on new data:
   
 model %>% predict_classes(x_test)
+
+
+# launch TensorBoard (data won't show up until after the first epoch)
+tensorboard("logs/run_a")
+
+# fit the model with the TensorBoard callback
+history <- model %>% fit(
+  x_train, y_train,
+  batch_size = 128,
+  epochs = 30,
+  verbose = 1,
+  callbacks = callback_tensorboard("logs/run_a"),
+  validation_split = 0.2
+)
