@@ -53,6 +53,36 @@ y_test <- mnist$test$y
 
 dim(x_train)
 
+
+# Preprocess the data
+# 
+# The data must be preprocessed before training the network. 
+# If you inspect the first image in the training set, you will 
+# see that the pixel values fall in the range of 0 to 255:
+  
+library(tidyr)
+library(ggplot2)
+
+image_1 <- as.data.frame(x_train[1, , ])
+colnames(image_1) <- seq_len(ncol(image_1))
+image_1$y <- seq_len(nrow(image_1))
+image_1 <- gather(image_1, "x", "value", -y)
+image_1$x <- as.integer(image_1$x)
+
+ggplot(image_1, aes(x = x, y = y, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "black", na.value = NA) +
+  scale_y_reverse() +
+  theme_minimal() +
+  theme(panel.grid = element_blank())   +
+  theme(aspect.ratio = 1) +
+  xlab("") +
+  ylab("")
+
+# OR
+# first_image <- apply(image_1, 2, as.numeric)
+# image(1:28, 1:28, first_image, col=gray((0:255)/255))
+
 # The x data is a 3-d array (images,width,height) of grayscale values . 
 # To prepare the data for training we convert the 3-d arrays into matrices by 
 # reshaping width and height into a single dimension (28x28 images are flattened 
@@ -74,7 +104,7 @@ x_test <- x_test / 255
 y_train <- to_categorical(y_train, 10)
 y_test <- to_categorical(y_test, 10)
 
-# Defining the Model
+# Defining the Model using the sequential API.
 # 
 # The core data structure of Keras is a model, a way to organize layers. 
 # The simplest type of model is the Sequential model, a linear stack of layers.
@@ -121,11 +151,14 @@ plot(history)
 model %>% evaluate(x_test, y_test)
 #Generate predictions on new data:
   
-model %>% predict_classes(x_test)
-
+#model %>% predict_classes(x_test)  ##removed in tensorflow 2.6
+model %>% predict(x_test) %>% k_argmax()
 
 # launch TensorBoard (data won't show up until after the first epoch)
+tensorboard("/Users/kevinwilliams/Documents/r-studio-and-git/MNIST/logs/run_a")
 tensorboard("logs/run_a")
+tensorboard(log_dir = "logs/run_a")
+tensorboard(log_dir = "logs/run_a", launch_browser = TRUE)
 
 # fit the model with the TensorBoard callback
 history <- model %>% fit(
